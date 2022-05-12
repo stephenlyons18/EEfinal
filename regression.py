@@ -262,6 +262,7 @@ def main():
     ybar = ybar / len(yValues)
     print("ybar:", ybar)
     
+    hypothesis_testing(b0, sse, len(x1Values), 0.01)
     hypothesis_testing(b1, sse, len(x1Values), 0.01)
     hypothesis_testing(b2, sse, len(x1Values), 0.01)
     
