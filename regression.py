@@ -1,6 +1,7 @@
 
 import os
 import random
+from re import A
 import numpy as np
 import math
 import matplotlib.pyplot as plt
@@ -8,6 +9,7 @@ import pandas as pd
 import glob
 from PIL import Image
 from scipy.stats import t
+import scipy.stats as st
 
 
 
@@ -30,7 +32,7 @@ def transpose(matrix):
         for j in range(len(matrix)):
             newMatrix[i].append(matrix[j][i])
     return newMatrix
-print(transpose([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
+#print(transpose([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
 
 # Function to determine coefficient of correlation between 2 data sets
 def determine_r(nvalues1, nvalues2):
@@ -72,7 +74,7 @@ def multiply(matrix1, matrix2):
             for k in range(len(matrix1[0])):
                 matrix3[i][j] += matrix1[i][k] * matrix2[k][j]
     return matrix3
-print(multiply([[1, 2, 3], [4, 5, 6], [7, 8, 9]], [[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
+#print(multiply([[1, 2, 3], [4, 5, 6], [7, 8, 9]], [[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
 
 
 
@@ -86,7 +88,41 @@ def make_gif():
     # create a gif
     images = [Image.open(i) for i in images]
     images[0].save('./animation.gif', save_all=True, append_images=images[1:], duration=100, loop=0)
+
+# Function to test hypothesis using data
+def hypothesis_testing(beta, stderr, n, alpha):
+
+    # Ho : p = 0
+    bnull = 0
+    # Ha : p != 0
+
+    # Degrees of Freedom
+    degreesOfFreedom = n - 3
+
+    # Test Statistic
+    t1 = (beta - bnull) / stderr
+    print('Test Statistic: ', t1)
+
+    # Critical Value
+    critvalue = t.ppf(1 - alpha, df = degreesOfFreedom)
+    print('Critical Value: ', critvalue)
+
+    # P-Value
+    p = st.norm.cdf(critvalue)
+    print(1 - p)
+
+    if(p <= alpha):
+        print("P:", p)
+        print("Alpha:", alpha)
+        print("Since the first p-value is less than or equal to alpha, we reject the null hypothesis.")
+    else:
+        print("P:", p)
+        print("Alpha:", alpha)
+        print("Since the first p-value is greater than alpha, we fail to reject the null hypothesis.")
+
     
+
+# Main Function 
 def main():
     df = pd.read_csv('./data.csv')
     # remove the first column of the dataframe 
@@ -110,11 +146,11 @@ def main():
     for i in range(len(x1Values)):
         X.append([1, x1Values[i], x2Values[i]])
         Y.append([yValues[i]])
-    print(X, Y)
+    #print(X, Y)
 
     # transpose X matrix
     XT = transpose(X)
-    print("X TRANSPOSE:",XT)
+    #print("X TRANSPOSE:",XT)
 
     # multiply X and Y matrices
     term1 = np.array(multiply(XT, X))
@@ -226,43 +262,11 @@ def main():
     ybar = ybar / len(yValues)
     print("ybar:", ybar)
     
-
+    hypothesis_testing(b1, sse, len(x1Values), 0.01)
+    hypothesis_testing(b2, sse, len(x1Values), 0.01)
     
 
-def hypothesis_testing(beta, b, standard_error, n, alpha):
-    # degrees of freedom
-    degreesOfFreedom = n - 1
 
-    # t-value
-    t1 = beta / standard_error
-
-    # p-value
-    p1 = (1 - t.cdf(x=t1, df = degreesOfFreedom)) * 2
-    print("p1:", p1)
-
-    # t-value
-    t2 = b / standard_error
-    
-    # p-value
-    p2 = (1 - t.cdf(x=t2, df = degreesOfFreedom)) * 2
-    print("p2:", p2)
-
-    if(p1 <= alpha):
-        print("P1:", p1)
-        print("Alpha:", alpha)
-        print("Since the first p-value is less than or equal to alpha, we reject the null hypothesis.")
-    else:
-        print("P1:", p1)
-        print("Alpha:", alpha)
-        print("Since the first p-value is greater than alpha, we fail to reject the null hypothesis.")
-    if(p2 <= alpha):
-        print("P2:", p2)
-        print("Alpha:", alpha)
-        print("Since the second p-value is less than or equal to alpha, we reject the null hypothesis.")
-    else:
-        print("P2:", p2)
-        print("Alpha:", alpha)
-        print("Since the second p-value is greater than alpha, we fail to reject the null hypothesis.")
 
 
 
