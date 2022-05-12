@@ -1,6 +1,7 @@
 
 import os
 import random
+from re import A
 import numpy as np
 import math
 import matplotlib.pyplot as plt
@@ -8,6 +9,7 @@ import pandas as pd
 import glob
 from PIL import Image
 from scipy.stats import t
+import scipy.stats as st
 
 
 
@@ -30,7 +32,7 @@ def transpose(matrix):
         for j in range(len(matrix)):
             newMatrix[i].append(matrix[j][i])
     return newMatrix
-print(transpose([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
+#print(transpose([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
 
 # Function to determine coefficient of correlation between 2 data sets
 def determine_r(nvalues1, nvalues2):
@@ -72,29 +74,60 @@ def multiply(matrix1, matrix2):
             for k in range(len(matrix1[0])):
                 matrix3[i][j] += matrix1[i][k] * matrix2[k][j]
     return matrix3
-print(multiply([[1, 2, 3], [4, 5, 6], [7, 8, 9]], [[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
+#print(multiply([[1, 2, 3], [4, 5, 6], [7, 8, 9]], [[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
 
 
 
 def make_gif():
     # create a sorted list of all the images in the images folder
     images = glob.glob('images/*.png')
+
     # sort the list by name
     images.sort()
+
     # create a gif
     images = [Image.open(i) for i in images]
     images[0].save('./animation.gif', save_all=True, append_images=images[1:], duration=100, loop=0)
+
+# Function to test hypothesis using data
+def hypothesis_testing(beta, stderr, n, alpha):
+
+    # Ho : p = 0
+    bnull = 0
+    # Ha : p != 0
+
+    # Degrees of Freedom
+    degreesOfFreedom = n - 3
+
+    # Test Statistic
+    t1 = (beta - bnull) / stderr
+    print('Test Statistic: ', t1)
+
+    # Critical Value
+    critvalue = t.ppf(1 - alpha, df = degreesOfFreedom)
+    print('Critical Value: ', critvalue)
+
+    # P-Value (2-tailed test)
+    p = st.norm.cdf(critvalue)
+    print((1 - p) * 2)
+
+    if(p <= alpha):
+        print("P:", p)
+        print("Alpha:", alpha)
+        print("Since the first p-value is less than or equal to alpha, we reject the null hypothesis.")
+    else:
+        print("P:", p)
+        print("Alpha:", alpha)
+        print("Since the first p-value is greater than alpha, we fail to reject the null hypothesis.")
+
     
 
-
-
-
+# Main Function 
 def main():
     df = pd.read_csv('./data.csv')
     # remove the first column of the dataframe 
 
     names = df['Name']
-    # convert names to np array
     names = np.array(names)
     x1 = df['Budget Adjusted for Inflation']
     x1Values = np.array(x1)
@@ -113,10 +146,12 @@ def main():
     for i in range(len(x1Values)):
         X.append([1, x1Values[i], x2Values[i]])
         Y.append([yValues[i]])
-    print(X, Y)
+    #print(X, Y)
+
     # transpose X matrix
     XT = transpose(X)
-    print("X TRANSPOSE:",XT)
+    #print("X TRANSPOSE:",XT)
+
     # multiply X and Y matrices
     term1 = np.array(multiply(XT, X))
     term2 = np.array(multiply(XT, Y))
@@ -125,29 +160,34 @@ def main():
     
     # intercept
     b0 = b[0][0]
+
     # x1 slope
     b1 = b[1][0]
+
     # x2 slope
     b2 = b[2][0]
+
     # print each value labeled
     print("b0:", b0)
     print("b1:", b1)
     print("b2:", b2)
+
     # create a 3d scatter plot of the x, y, and z values
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     ax.scatter(x1Values, x2Values, yValues)
+
     # label the axes with the names of the variables
     ax.set_xlabel('Budget')
     ax.set_ylabel('Rating')
     ax.set_zlabel('Box Office')
+
     # # label each point with its name according to the names list
     # for i in range(0,len(x1Values), 20):
     #     ax.text(x1Values[i], x2Values[i], yValues[i], names[i])
     
     
     # plot the 3 dimensional regression line on the scatter plot using the x1 slope, x2 slope, and intercept
-    
     # calculate the x y and z values for the regression line
     
     regressionX = np.linspace(min(x1Values), max(x1Values), 100)
@@ -165,8 +205,8 @@ def main():
         errorVector.append(yValues[i] - (b0 + b1 * x1Values[i] + b2 * x2Values[i]))
     sseTranpose = np.transpose(errorVector)
     sse = np.matmul(sseTranpose, errorVector)
-    
     print("SSE:", sse)
+
     # • MSE (error variance)
     mse = sse / len(x1Values)
     print("MSE:", mse)
@@ -222,39 +262,11 @@ def main():
     ybar = ybar / len(yValues)
     print("ybar:", ybar)
     
-
+    hypothesis_testing(b1, sse, len(x1Values), 0.01)
+    hypothesis_testing(b2, sse, len(x1Values), 0.01)
     
 
-def hypothesis_testing(beta, b, standard_error, n, alpha):
-    # degrees of freedom
-    degreesOfFreedom = n - 3
-    # t-value
-    t1 = beta / standard_error
-    # p-value
-    p1 = (1 - t.cdf(x=t1, df = degreesOfFreedom)) * 2
-    print("p1:", p1)
-    # t-value
-    t2 = b / standard_error
-    # p-value
-    p2 = (1 - t.cdf(x=t2, df = degreesOfFreedom)) * 2
-    print("p2:", p2)
 
-    if(p1 <= alpha):
-        print("P1:", p1)
-        print("Alpha:", alpha)
-        print("Since the first p-value is less than or equal to alpha, we reject the null hypothesis.")
-    else:
-        print("P1:", p1)
-        print("Alpha:", alpha)
-        print("Since the first p-value is greater than alpha, we fail to reject the null hypothesis.")
-    if(p2 <= alpha):
-        print("P2:", p2)
-        print("Alpha:", alpha)
-        print("Since the second p-value is less than or equal to alpha, we reject the null hypothesis.")
-    else:
-        print("P2:", p2)
-        print("Alpha:", alpha)
-        print("Since the second p-value is greater than alpha, we fail to reject the null hypothesis.")
 
 
 
