@@ -104,12 +104,12 @@ def hypothesis_testing(beta, stderr, n, alpha):
     print('Test Statistic: ', t1)
 
     # Critical Value
-    critvalue = t.ppf(1 - alpha, df = degreesOfFreedom)
+    critvalue = t.ppf(1 - alpha, degreesOfFreedom)
     print('Critical Value: ', critvalue)
 
     # P-Value (2-tailed test)
-    p = st.norm.cdf(critvalue)
-    print((1 - p) * 2)
+    p = 2 * (1 - t.cdf(abs(t1), degreesOfFreedom))
+    print('P-Value: ', p)
 
     if(p <= alpha):
         print("P:", p)
