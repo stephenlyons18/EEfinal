@@ -104,12 +104,12 @@ def hypothesis_testing(beta, stderr, n, alpha):
     print('Test Statistic: ', t1)
 
     # Critical Value
-    critvalue = t.ppf(1 - alpha, df = degreesOfFreedom)
+    critvalue = t.ppf(1 - alpha, degreesOfFreedom)
     print('Critical Value: ', critvalue)
 
     # P-Value (2-tailed test)
-    p = st.norm.cdf(critvalue)
-    print((1 - p) * 2)
+    p = 2 * (1 - t.cdf(abs(t1), degreesOfFreedom))
+    print('P-Value: ', p)
 
     if(p <= alpha):
         print("P:", p)
@@ -236,9 +236,9 @@ def main():
 
 
     # save 360 degree rotation of the scatter plot
-    # for k in range(0,360, 10):
-    #     ax.view_init(elev=10, azim=k)
-    #     plt.savefig('./images/scatter_rotation_%d.png' % k)
+    for k in range(0,360, 10):
+        ax.view_init(elev=10, azim=k)
+        plt.savefig('./images/scatter_rotation_%d.png' % k)
 
     # use all the images in the folder to create a gif using 
     # make_gif()
