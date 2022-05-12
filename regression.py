@@ -196,9 +196,9 @@ def main():
 
 
     # save 360 degree rotation of the scatter plot
-    # for k in range(0,360, 10):
-    #     ax.view_init(elev=10, azim=k)
-    #     plt.savefig('./images/scatter_rotation_%d.png' % k)
+    for k in range(0,360, 10):
+        ax.view_init(elev=10, azim=k)
+        plt.savefig('./images/scatter_rotation_%d.png' % k)
 
     # use all the images in the folder to create a gif using 
     # make_gif()
